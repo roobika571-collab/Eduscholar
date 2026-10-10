@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Application Review #APP-{{ "%04d"|format(app.id) }} – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #091a2c 0%, #0f2b48 100%);">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <span class="category-tag" style="background: rgba(255,255,255,0.15); color: #5eead4; margin-bottom: 0.5rem; display: inline-block;">Official Evaluation</span>
+            <h1>Review Application #APP-{{ "%04d"|format(app.id) }}</h1>
+            <p>Applicant: <strong>{{ app.applicant_name }}</strong> &bull; Program: <strong>{{ app.scholarship_title }}</strong></p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin_applications') }}" class="btn btn-outline btn-sm">&larr; Back to Applications</a>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="max-width: 1050px;">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Left: Application Details & Essay -->
+        <div>
+            <!-- Applicant Academic Profile Card -->
+            <div class="card-table-wrapper" style="padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary); font-size: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    Applicant Dossier
+                </h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.8rem; font-weight: 600;">Full Legal Name:</span>
+                        <strong>{{ app.applicant_name }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.8rem; font-weight: 600;">Email:</span>
+                        <a href="mailto:{{ app.applicant_email }}">{{ app.applicant_email }}</a>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.8rem; font-weight: 600;">Institution / College:</span>
+                        <strong>{{ app.applicant_institution or 'Not specified' }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.8rem; font-weight: 600;">Field of Study:</span>
+                        <strong>{{ app.applicant_major or 'Not specified' }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.8rem; font-weight: 600;">Academic Level:</span>
+                        <strong>{{ app.academic_level }}</strong>
+                    </div>
+                    <div>
+                        <span style="color: var(--text-muted); display: block; font-size: 0.8rem; font-weight: 600;">Reported GPA:</span>
+                        <strong style="color: var(--accent); font-size: 1.1rem;">{{ "%.2f"|format(app.gpa) }} / 4.00</strong>
+                    </div>
+                </div>
+
+                {% if app.applicant_bio %}
+                    <div style="background-color: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); font-size: 0.88rem;">
+                        <strong style="color: var(--primary); display: block; margin-bottom: 0.25rem;">Candidate Background:</strong>
+                        <p style="margin: 0; color: var(--text-body);">{{ app.applicant_bio }}</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Statement of Purpose Essay -->
+            <div class="card-table-wrapper" style="padding: 2rem; margin-bottom: 2rem;">
+                <h3 style="color: var(--primary); font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    Statement of Purpose &amp; Academic Essay
+                </h3>
+                <div style="background-color: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.5rem; font-size: 0.95rem; line-height: 1.7; color: var(--text-body); white-space: pre-wrap;">{{ app.essay }}</div>
+            </div>
+
+            <!-- Attached Supporting Document -->
+            <div class="card-table-wrapper" style="padding: 2rem;">
+                <h3 style="color: var(--primary); font-size: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+                    Submitted Verification Document
+                </h3>
+                {% if app.document_path %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-alt); padding: 1rem 1.25rem; border-radius: var(--radius-md);">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent);">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <div>
+                                <strong>{{ app.document_name or 'official_transcript.pdf' }}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">Uploaded with application submission</div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('download_document', application_id=app.id) }}" class="btn btn-navy btn-sm" target="_blank">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Download Document
+                        </a>
+                    </div>
+                {% else %}
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">No document attached.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Committee Determination Action Card -->
+        <div>
+            <div class="card-table-wrapper" style="padding: 2rem; position: sticky; top: 90px; border-top: 4px solid var(--accent);">
+                <h3 style="color: var(--primary); font-size: 1.25rem; margin-bottom: 1.25rem;">Committee Determination</h3>
+
+                <div style="margin-bottom: 1.5rem; background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md);">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Current Status:</div>
+                    <div style="margin-top: 0.35rem;">
+                        {% if app.status == 'Submitted' %}
+                            <span class="badge-status submitted">Submitted</span>
+                        {% elif app.status == 'Under Review' %}
+                            <span class="badge-status under-review">Under Review</span>
+                        {% elif app.status == 'Approved' %}
+                            <span class="badge-status approved">Approved</span>
+                        {% elif app.status == 'Rejected' %}
+                            <span class="badge-status rejected">Rejected</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('admin_update_application_status', app_id=app.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-group">
+                        <label class="form-label" for="status">Update Status <span class="req">*</span></label>
+                        <select name="status" id="status" class="form-control" required>
+                            <option value="Under Review" {% if app.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                            <option value="Approved" {% if app.status == 'Approved' %}selected{% endif %}>Approved (Award Grant)</option>
+                            <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected (Not Selected)</option>
+                            <option value="Submitted" {% if app.status == 'Submitted' %}selected{% endif %}>Submitted (Reset)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="admin_notes">Official Evaluator Notes &amp; Feedback</label>
+                        <textarea name="admin_notes" id="admin_notes" class="form-control" rows="5" placeholder="Enter remarks, conditions, or feedback visible to applicant...">{{ app.admin_notes or '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                        Save Status &amp; Update Record
+                    </button>
+                </form>
+
+                {% if app.reviewer_name %}
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed var(--border); font-size: 0.8rem; color: var(--text-muted);">
+                        Last reviewed by: <strong>{{ app.reviewer_name }}</strong><br>
+                        Timestamp: {{ app.reviewed_at }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

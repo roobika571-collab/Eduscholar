@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found – EduScholar{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; padding: 6rem 1.5rem;">
+    <h1 style="font-size: 5rem; font-weight: 800; color: var(--primary); line-height: 1; margin-bottom: 1rem;">404</h1>
+    <h2 style="font-size: 1.8rem; color: var(--text-heading); margin-bottom: 1rem;">Scholarship Page Not Found</h2>
+    <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 2rem auto;">
+        The requested resource or scholarship program could not be located. It may have been moved, expired, or deactivated.
+    </p>
+    <a href="{{ url_for('landing') }}" class="btn btn-primary">Return to Homepage</a>
+</div>
+{% endblock %}

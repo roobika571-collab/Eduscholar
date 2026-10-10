@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scholarship.title }} – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <span class="category-tag" style="background: rgba(255,255,255,0.15); color: #5eead4; margin-bottom: 0.5rem; display: inline-block;">{{ scholarship.category }}</span>
+            <h1>{{ scholarship.title }}</h1>
+            <p>Administered by {{ scholarship.organization }}</p>
+        </div>
+        <div>
+            {% if has_applied %}
+                <a href="{{ url_for('my_applications') }}" class="btn btn-outline btn-sm">View Your Submitted Application</a>
+            {% else %}
+                <a href="{{ url_for('apply_scholarship', scholarship_id=scholarship.id) }}" class="btn btn-primary btn-lg">Apply for this Award &rarr;</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container" style="max-width: 900px;">
+    <div class="card-table-wrapper" style="padding: 2.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; background: var(--bg-alt); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 2rem;">
+            <div>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Award Amount</span>
+                <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent);">${{ "{:,.0f}".format(scholarship.amount) }}</div>
+            </div>
+            <div>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Deadline</span>
+                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-top: 0.4rem;">{{ scholarship.deadline }}</div>
+            </div>
+            <div>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Recipients Selected</span>
+                <div style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-top: 0.4rem;">{{ scholarship.slots }} Students</div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+            <h3 style="color: var(--primary); margin-bottom: 0.75rem; font-size: 1.25rem;">Program Description</h3>
+            <p style="line-height: 1.7; color: var(--text-body);">{{ scholarship.description }}</p>
+        </div>
+
+        <div style="margin-bottom: 2.5rem;">
+            <h3 style="color: var(--primary); margin-bottom: 0.75rem; font-size: 1.25rem;">Eligibility Criteria &amp; Requirements</h3>
+            <div style="background-color: #f8fafc; border-left: 4px solid var(--accent); padding: 1rem 1.25rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+                <p style="color: var(--text-body); line-height: 1.6;">{{ scholarship.eligibility }}</p>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <a href="{{ url_for('scholarship_list') }}" class="btn btn-outline-navy">&larr; Back to Scholarship Catalog</a>
+            {% if has_applied %}
+                <span class="badge-status submitted">You have applied for this scholarship</span>
+            {% else %}
+                <a href="{{ url_for('apply_scholarship', scholarship_id=scholarship.id) }}" class="btn btn-primary btn-lg">Begin Application</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

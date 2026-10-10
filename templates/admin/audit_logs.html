@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}System Audit Logs – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #091a2c 0%, #0f2b48 100%);">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <span class="user-role-badge admin" style="background: rgba(251, 191, 36, 0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); margin-bottom: 0.5rem; display: inline-block;">Compliance &amp; Security</span>
+            <h1>Administrative Audit Logs</h1>
+            <p>Chronological audit trail of all state-modifying actions, evaluations, and security events.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline btn-sm">&larr; Return to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card-table-wrapper">
+        <div class="table-header-bar">
+            <h3>Recorded Events History ({{ logs|length }} Entries)</h3>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Timestamp</th>
+                        <th>Actor</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                        <th>Event Description</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td><code style="font-size: 0.8rem; font-weight: 700;">#LOG-{{ "%05d"|format(log.id) }}</code></td>
+                            <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">{{ log.created_at }}</td>
+                            <td>
+                                <strong>{{ log.user_name or 'System Automated' }}</strong>
+                                {% if log.user_email %}
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ log.user_email }}</div>
+                                {% endif %}
+                                {% if log.user_role %}
+                                    <span class="user-role-badge {{ log.user_role }}" style="font-size: 0.65rem;">{{ log.user_role }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <code style="font-size: 0.75rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: 600; color: var(--primary);">{{ log.action }}</code>
+                            </td>
+                            <td style="font-size: 0.82rem; text-transform: capitalize;">
+                                <strong>{{ log.target_type }}</strong>
+                                {% if log.target_id %}&bull; #{{ log.target_id }}{% endif %}
+                            </td>
+                            <td style="font-size: 0.85rem; max-width: 380px;">{{ log.details }}</td>
+                            <td><code style="font-size: 0.8rem;">{{ log.ip_address }}</code></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

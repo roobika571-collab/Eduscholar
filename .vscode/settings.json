@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.html": "jinja-html"
+    },
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.defaultProfile.windows": "PowerShell"
+}

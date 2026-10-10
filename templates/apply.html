@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for {{ scholarship.title }} – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <span class="category-tag" style="background: rgba(255,255,255,0.15); color: #5eead4; margin-bottom: 0.5rem; display: inline-block;">{{ scholarship.category }}</span>
+            <h1>Application: {{ scholarship.title }}</h1>
+            <p>Administered by {{ scholarship.organization }} &bull; Award: ${{ "{:,.0f}".format(scholarship.amount) }}</p>
+        </div>
+        <div>
+            <span style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; color: #cbd5e1;">
+                Deadline: <strong>{{ scholarship.deadline }}</strong>
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="max-width: 860px;">
+    <div class="card-table-wrapper" style="padding: 2.5rem;">
+        <!-- Scholarship Eligibility Summary Callout -->
+        <div style="background-color: #f0fdfa; border: 1px solid #99f6e4; border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
+            <h4 style="color: #0f766e; font-size: 0.95rem; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                Eligibility Guidelines
+            </h4>
+            <p style="color: #115e59; font-size: 0.88rem; margin: 0;">{{ scholarship.eligibility }}</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('apply_scholarship', scholarship_id=scholarship.id) }}" enctype="multipart/form-data" id="applicationForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <!-- Applicant Verification Section -->
+            <h3 style="font-size: 1.2rem; color: var(--primary); margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                1. Applicant Information
+            </h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" value="{{ user.full_name }}" disabled style="background-color: var(--bg-alt);">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-control" value="{{ user.email }}" disabled style="background-color: var(--bg-alt);">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Current Academic Level <span class="req">*</span></label>
+                    <select name="academic_level" class="form-control" required>
+                        <option value="Undergraduate" {% if user.education_level == 'Undergraduate' %}selected{% endif %}>Undergraduate (Bachelor's)</option>
+                        <option value="High School Senior" {% if user.education_level == 'High School' %}selected{% endif %}>High School Senior</option>
+                        <option value="Graduate / Master's" {% if user.education_level == 'Postgraduate' %}selected{% endif %}>Graduate / Master's Degree</option>
+                        <option value="Doctorate / PhD" {% if user.education_level == 'Doctorate' %}selected{% endif %}>Doctorate / PhD</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="gpa">Verified Cumulative GPA <span class="req">*</span></label>
+                    <input type="number" step="0.01" min="0.0" max="4.0" id="gpa" name="gpa" class="form-control" value="{{ '%.2f'|format(user.gpa) if user.gpa else '' }}" placeholder="e.g. 3.75" required>
+                    <div class="form-text">Must match official transcripts submitted below.</div>
+                </div>
+            </div>
+
+            <!-- Statement of Purpose / Essay -->
+            <h3 style="font-size: 1.2rem; color: var(--primary); margin-top: 2rem; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                2. Statement of Purpose &amp; Academic Intent
+            </h3>
+
+            <div class="form-group">
+                <label class="form-label" for="essay">
+                    Personal Statement / Academic Goals <span class="req">*</span>
+                </label>
+                <div class="form-text" style="margin-bottom: 0.5rem;">
+                    Describe your academic achievements, leadership experience, how this scholarship will impact your education, and your career aspirations (minimum 25 words).
+                </div>
+                <textarea id="essay" name="essay" class="form-control" rows="8" placeholder="Begin typing your statement of purpose here..." required minlength="100"></textarea>
+            </div>
+
+            <!-- Supporting Document Upload -->
+            <h3 style="font-size: 1.2rem; color: var(--primary); margin-top: 2rem; margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);">
+                3. Academic Transcripts &amp; Supporting Documentation
+            </h3>
+
+            <div class="form-group">
+                <label class="form-label">Upload Official Transcript or Verification Document <span class="req">*</span></label>
+                <div class="file-upload-box" onclick="document.getElementById('document').click()">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p style="font-weight: 600; color: var(--primary); margin-bottom: 0.25rem;">Click to browse files or drop document here</p>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Accepted: PDF, PNG, JPG, JPEG, DOC, DOCX (Max: 16 MB)</p>
+                    <input type="file" id="document" name="document" style="display: none;" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" required>
+                </div>
+                <div id="document-feedback" class="file-feedback" style="font-size: 0.85rem; margin-top: 0.5rem; font-weight: 600;"></div>
+            </div>
+
+            <!-- Declaration -->
+            <div class="form-group" style="margin-top: 2rem; background: var(--bg-alt); padding: 1rem 1.25rem; border-radius: var(--radius-md);">
+                <label style="display: flex; gap: 0.75rem; align-items: flex-start; cursor: pointer; font-size: 0.88rem; color: var(--text-body);">
+                    <input type="checkbox" required style="margin-top: 0.25rem;">
+                    <span>
+                        I certify that all statements made in this application are true, accurate, and complete. I authorize the scholarship review committee to verify my academic standing and submitted documents.
+                    </span>
+                </label>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem;">
+                <a href="{{ url_for('scholarship_list') }}" class="btn btn-outline-navy">Cancel &amp; Return</a>
+                <button type="submit" class="btn btn-primary btn-lg">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

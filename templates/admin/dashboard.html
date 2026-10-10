@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #091a2c 0%, #0f2b48 100%);">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <span class="user-role-badge admin" style="background: rgba(251, 191, 36, 0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); margin-bottom: 0.5rem; display: inline-block;">Administrative Control Console</span>
+            <h1>Operations Overview</h1>
+            <p>System metrics, applicant activity, and compliance log oversight.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{{ url_for('admin_scholarships') }}" class="btn btn-outline btn-sm">+ Add Scholarship</a>
+            <a href="{{ url_for('admin_applications') }}" class="btn btn-primary btn-sm">Review Applications &rarr;</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Platform Metrics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.total_applicants }}</h3>
+                <p>Registered Students</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.pending_review }}</h3>
+                <p>Pending Review</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.approved_count }}</h3>
+                <p>Applications Approved</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon accent">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.funds_awarded }}</h3>
+                <p>Total Funds Awarded</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>
+            </div>
+            <div class="stat-info">
+                <h3>{{ stats.active_scholarships }}</h3>
+                <p>Active Programs</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Applications for Review -->
+    <div class="card-table-wrapper">
+        <div class="table-header-bar">
+            <h3>Recent Submissions Awaiting Evaluation</h3>
+            <a href="{{ url_for('admin_applications') }}" class="btn btn-outline-navy btn-sm">Manage All Applications &rarr;</a>
+        </div>
+
+        {% if recent_applications %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Applicant</th>
+                            <th>Scholarship</th>
+                            <th>Award Amount</th>
+                            <th>GPA</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in recent_applications %}
+                            <tr>
+                                <td>
+                                    <strong>{{ app.applicant_name }}</strong>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ app.applicant_email }}</div>
+                                </td>
+                                <td>{{ app.scholarship_title }}</td>
+                                <td><strong>${{ "{:,.0f}".format(app.amount) }}</strong></td>
+                                <td>{{ "%.2f"|format(app.gpa) }}</td>
+                                <td>{{ app.submitted_at[:10] }}</td>
+                                <td>
+                                    {% if app.status == 'Submitted' %}
+                                        <span class="badge-status submitted">Submitted</span>
+                                    {% elif app.status == 'Under Review' %}
+                                        <span class="badge-status under-review">Under Review</span>
+                                    {% elif app.status == 'Approved' %}
+                                        <span class="badge-status approved">Approved</span>
+                                    {% elif app.status == 'Rejected' %}
+                                        <span class="badge-status rejected">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin_application_detail', app_id=app.id) }}" class="btn btn-primary btn-sm">Review App</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding: 2.5rem; text-align: center; color: var(--text-muted);">
+                No applications submitted yet.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Administrative Audit Logs -->
+    <div class="card-table-wrapper">
+        <div class="table-header-bar">
+            <h3>Recent Administrative Audit Trail</h3>
+            <a href="{{ url_for('admin_audit_logs') }}" class="btn btn-outline-navy btn-sm">Full Audit History &rarr;</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User / Operator</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                        <th>Event Details</th>
+                        <th>IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in recent_audit_logs %}
+                        <tr>
+                            <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">{{ log.created_at }}</td>
+                            <td>
+                                <strong>{{ log.user_name or 'System Event' }}</strong>
+                            </td>
+                            <td>
+                                <code style="font-size: 0.78rem; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: 600;">{{ log.action }}</code>
+                            </td>
+                            <td style="text-transform: capitalize; font-size: 0.85rem;">{{ log.target_type }} #{{ log.target_id }}</td>
+                            <td style="font-size: 0.85rem; max-width: 320px;">{{ log.details }}</td>
+                            <td style="font-size: 0.8rem; font-family: monospace;">{{ log.ip_address }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}EduScholar – Premier Scholarship Application Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container hero-grid">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Accepting 2026 - 2027 Academic Cycles
+            </div>
+            <h1 class="hero-title">Unlock Your Future With <span>Direct Scholarships</span></h1>
+            <p class="hero-subtitle">
+                EduScholar empowers ambitious students by connecting them with life-changing academic funding, transparent evaluation, and streamlined application tracking.
+            </p>
+            <div class="hero-cta">
+                <a href="{{ url_for('scholarship_list') }}" class="btn btn-primary btn-lg">Explore Scholarships</a>
+                {% if not current_user %}
+                    <a href="{{ url_for('register') }}" class="btn btn-outline btn-lg">Create Student Profile</a>
+                {% else %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline btn-lg">Go to My Dashboard</a>
+                {% endif %}
+            </div>
+
+            <div class="hero-stats-row">
+                <div class="hero-stat-item">
+                    <h3>{{ stats.total_scholarships }}</h3>
+                    <p>Active Programs</p>
+                </div>
+                <div class="hero-stat-item">
+                    <h3>{{ stats.total_funding }}</h3>
+                    <p>Total Available Funds</p>
+                </div>
+                <div class="hero-stat-item">
+                    <h3>{{ stats.total_awarded }}</h3>
+                    <p>Grants Awarded</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="hero-visual-card">
+                <div class="visual-badge-pill">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Verified Institutional Grants
+                </div>
+                <h3 class="visual-title">Simple 3-Step Process</h3>
+                <p class="visual-desc">No complicated paperwork or hidden fees. We verify every partner organization to ensure immediate payout upon award.</p>
+                
+                <div class="visual-list">
+                    <div class="visual-list-item">
+                        <span class="check-circle">&#10003;</span>
+                        <span>Complete your one-time academic profile</span>
+                    </div>
+                    <div class="visual-list-item">
+                        <span class="check-circle">&#10003;</span>
+                        <span>Upload transcripts and statement of purpose</span>
+                    </div>
+                    <div class="visual-list-item">
+                        <span class="check-circle">&#10003;</span>
+                        <span>Live status updates directly from committees</span>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('scholarship_list') }}" class="btn btn-primary" style="width: 100%;">Browse Eligible Programs</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Scholarships Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Featured Opportunities</span>
+            <h2 class="section-title">Open for Immediate Application</h2>
+            <p class="section-desc">Apply before deadlines expire. Top endowments funding undergraduate, STEM, medical, and artistic research.</p>
+        </div>
+
+        <div class="scholarship-grid">
+            {% for s in featured_scholarships %}
+                <div class="scholarship-card">
+                    <div class="scholarship-header">
+                        <div class="scholarship-meta-top">
+                            <span class="category-tag">{{ s.category }}</span>
+                            <span class="amount-tag">${{ "{:,.0f}".format(s.amount) }}</span>
+                        </div>
+                        <h3 class="scholarship-title">{{ s.title }}</h3>
+                        <p class="scholarship-org">{{ s.organization }}</p>
+                    </div>
+
+                    <div class="scholarship-body">
+                        <p class="scholarship-desc">{{ s.description }}</p>
+                        <div class="scholarship-details-list">
+                            <div class="detail-item">
+                                <span class="detail-label">Application Deadline:</span>
+                                <span class="detail-val">{{ s.deadline }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Available Slots:</span>
+                                <span class="detail-val">{{ s.slots }} recipients</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scholarship-footer">
+                        <a href="{{ url_for('scholarship_detail', scholarship_id=s.id) }}" class="btn btn-outline-navy btn-sm" style="flex: 1;">View Details</a>
+                        <a href="{{ url_for('apply_scholarship', scholarship_id=s.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">Apply Now</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem;">
+            <a href="{{ url_for('scholarship_list') }}" class="btn btn-navy btn-lg">View All {{ stats.total_scholarships }} Scholarships &rarr;</a>
+        </div>
+    </div>
+</section>
+
+<!-- Key Platform Benefits -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Why EduScholar</span>
+            <h2 class="section-title">Designed for Transparent Education Financing</h2>
+            <p class="section-desc">Built from the ground up to eliminate administrative friction and provide merit-based access to funding.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon-box">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </div>
+                <h3>Unified Application System</h3>
+                <p>One applicant profile connects you with multiple endowments. Store your academic records and easily apply with tailored essays.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <h3>Real-Time Status Tracking</h3>
+                <p>Never wonder if your application was seen. Follow the clear four-stage pipeline: Submitted, Under Review, Approved, or Feedback.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <h3>Bank-Grade Data Security</h3>
+                <p>All sensitive transcripts and academic documents are securely stored and accessible solely by verified review panels.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4 Step Student Journey -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-tag">Student Workflow</span>
+            <h2 class="section-title">How To Secure Your Grant</h2>
+            <p class="section-desc">Four straightforward milestones from discovery to award confirmation.</p>
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h4>Register Account</h4>
+                <p>Sign up in under 60 seconds and input your academic level, GPA, and major.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h4>Search Programs</h4>
+                <p>Filter by criteria such as STEM, Need-Based, or Women in Tech to find your best matches.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h4>Submit Application</h4>
+                <p>Upload your academic transcript and write a concise statement of purpose.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h4>Track Approval</h4>
+                <p>Monitor review status on your live dashboard and receive administrative feedback.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

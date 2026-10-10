@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Scholarships – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #091a2c 0%, #0f2b48 100%);">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <span class="user-role-badge admin" style="background: rgba(251, 191, 36, 0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); margin-bottom: 0.5rem; display: inline-block;">Endowment Management</span>
+            <h1>Scholarship Programs Administration</h1>
+            <p>Create new scholarship grants, modify funding criteria, and manage active cycles.</p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary btn-sm" data-modal-target="createScholarshipModal">
+                + Create New Scholarship
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card-table-wrapper">
+        <div class="table-header-bar">
+            <h3>Registered Scholarship Programs ({{ scholarships|length }})</h3>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Program Title &amp; Sponsor</th>
+                        <th>Category</th>
+                        <th>Award Amount</th>
+                        <th>Deadline</th>
+                        <th>Applicants</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in scholarships %}
+                        <tr>
+                            <td>
+                                <strong>{{ s.title }}</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ s.organization }}</div>
+                            </td>
+                            <td><span class="category-tag">{{ s.category }}</span></td>
+                            <td><strong>${{ "{:,.0f}".format(s.amount) }}</strong></td>
+                            <td style="font-size: 0.85rem;">{{ s.deadline }}</td>
+                            <td>
+                                <strong>{{ s.total_applicants }}</strong> applicants
+                                <div style="font-size: 0.75rem; color: #059669; font-weight: 600;">{{ s.approved_count or 0 }} awarded</div>
+                            </td>
+                            <td>
+                                {% if s.status == 'active' %}
+                                    <span class="badge-active">Active</span>
+                                {% else %}
+                                    <span class="badge-inactive">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <!-- Edit Trigger Button -->
+                                    <button type="button" class="btn btn-outline-navy btn-sm" data-modal-target="editModal{{ s.id }}">
+                                        Edit
+                                    </button>
+
+                                    <!-- Toggle Status Form -->
+                                    <form method="POST" action="{{ url_for('admin_toggle_scholarship_status', scholarship_id=s.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn {% if s.status == 'active' %}btn-danger{% else %}btn-success{% endif %} btn-sm">
+                                            {% if s.status == 'active' %}Deactivate{% else %}Activate{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Modal for Editing this Scholarship -->
+                        <div class="modal-overlay" id="editModal{{ s.id }}">
+                            <div class="modal-dialog">
+                                <div class="modal-header">
+                                    <h3 class="modal-title">Edit Scholarship #{{ s.id }}</h3>
+                                    <button type="button" class="modal-close">&times;</button>
+                                </div>
+                                <form method="POST" action="{{ url_for('admin_edit_scholarship', scholarship_id=s.id) }}">
+                                    <div class="modal-body">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                        <div class="form-group">
+                                            <label class="form-label">Program Title <span class="req">*</span></label>
+                                            <input type="text" name="title" class="form-control" value="{{ s.title }}" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Sponsoring Organization <span class="req">*</span></label>
+                                            <input type="text" name="organization" class="form-control" value="{{ s.organization }}" required>
+                                        </div>
+
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label class="form-label">Award Amount ($) <span class="req">*</span></label>
+                                                <input type="number" step="100" name="amount" class="form-control" value="{{ s.amount }}" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Application Deadline <span class="req">*</span></label>
+                                                <input type="date" name="deadline" class="form-control" value="{{ s.deadline }}" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label class="form-label">Category</label>
+                                                <select name="category" class="form-control">
+                                                    <option value="STEM" {% if s.category == 'STEM' %}selected{% endif %}>STEM</option>
+                                                    <option value="Women in Tech" {% if s.category == 'Women in Tech' %}selected{% endif %}>Women in Tech</option>
+                                                    <option value="Need-Based" {% if s.category == 'Need-Based' %}selected{% endif %}>Need-Based</option>
+                                                    <option value="Healthcare" {% if s.category == 'Healthcare' %}selected{% endif %}>Healthcare</option>
+                                                    <option value="Arts & Humanities" {% if s.category == 'Arts & Humanities' %}selected{% endif %}>Arts & Humanities</option>
+                                                    <option value="Merit-Based" {% if s.category == 'Merit-Based' %}selected{% endif %}>Merit-Based</option>
+                                                    <option value="Leadership" {% if s.category == 'Leadership' %}selected{% endif %}>Leadership</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label">Recipients Slots</label>
+                                                <input type="number" min="1" name="slots" class="form-control" value="{{ s.slots }}">
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Description <span class="req">*</span></label>
+                                            <textarea name="description" class="form-control" rows="3" required>{{ s.description }}</textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Eligibility Criteria <span class="req">*</span></label>
+                                            <textarea name="eligibility" class="form-control" rows="3" required>{{ s.eligibility }}</textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Status</label>
+                                            <select name="status" class="form-control">
+                                                <option value="active" {% if s.status == 'active' %}selected{% endif %}>Active</option>
+                                                <option value="inactive" {% if s.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-ghost" data-modal-close>Cancel</button>
+                                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Create New Scholarship -->
+<div class="modal-overlay" id="createScholarshipModal">
+    <div class="modal-dialog">
+        <div class="modal-header">
+            <h3 class="modal-title">Create New Scholarship Program</h3>
+            <button type="button" class="modal-close">&times;</button>
+        </div>
+        <form method="POST" action="{{ url_for('admin_create_scholarship') }}">
+            <div class="modal-body">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label class="form-label">Program Title <span class="req">*</span></label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. NextGen Engineering Fellowship" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Sponsoring Organization <span class="req">*</span></label>
+                    <input type="text" name="organization" class="form-control" placeholder="e.g. Future Tech Endowment" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Award Amount ($) <span class="req">*</span></label>
+                        <input type="number" step="100" name="amount" class="form-control" placeholder="e.g. 5000" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Application Deadline <span class="req">*</span></label>
+                        <input type="date" name="deadline" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select name="category" class="form-control">
+                            <option value="STEM">STEM</option>
+                            <option value="Women in Tech">Women in Tech</option>
+                            <option value="Need-Based">Need-Based</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Arts & Humanities">Arts & Humanities</option>
+                            <option value="Merit-Based">Merit-Based</option>
+                            <option value="Leadership">Leadership</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Recipients Slots</label>
+                        <input type="number" min="1" name="slots" class="form-control" value="1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description <span class="req">*</span></label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="Overview of the scholarship goals..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Eligibility Criteria <span class="req">*</span></label>
+                    <textarea name="eligibility" class="form-control" rows="3" placeholder="GPA requirements, student major, qualifying conditions..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Initial Status</label>
+                    <select name="status" class="form-control">
+                        <option value="active">Active (Open for applications)</option>
+                        <option value="inactive">Inactive (Draft)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Program</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

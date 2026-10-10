@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Application Review Management – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="background: linear-gradient(135deg, #091a2c 0%, #0f2b48 100%);">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <span class="user-role-badge admin" style="background: rgba(251, 191, 36, 0.15); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); margin-bottom: 0.5rem; display: inline-block;">Evaluation Queue</span>
+            <h1>Scholarship Application Review</h1>
+            <p>Evaluate student transcripts, personal essays, and record official award determinations.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Filter and Search Bar -->
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('admin_applications') }}" class="filter-form">
+            <div class="search-input-wrapper">
+                <span class="search-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </span>
+                <input type="text" name="search" value="{{ search }}" class="search-input" placeholder="Search applicant name, email, or scholarship...">
+            </div>
+
+            <div>
+                <select name="status" class="filter-select">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                    <option value="Submitted" {% if status_filter == 'Submitted' %}selected{% endif %}>Submitted</option>
+                    <option value="Under Review" {% if status_filter == 'Under Review' %}selected{% endif %}>Under Review</option>
+                    <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
+                    <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+
+            <div>
+                <select name="scholarship_id" class="filter-select">
+                    <option value="">All Scholarships</option>
+                    {% for s in scholarships %}
+                        <option value="{{ s.id }}" {% if scholarship_id == s.id|string %}selected{% endif %}>{{ s.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-navy">Filter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="card-table-wrapper">
+        <div class="table-header-bar">
+            <h3>Applications ({{ applications|length }} Total)</h3>
+        </div>
+
+        {% if applications %}
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ref #</th>
+                            <th>Applicant</th>
+                            <th>Scholarship</th>
+                            <th>Academic Level</th>
+                            <th>GPA</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                            <th>Review Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            <tr>
+                                <td><code style="font-size: 0.8rem; font-weight: 700;">#APP-{{ "%04d"|format(app.id) }}</code></td>
+                                <td>
+                                    <strong>{{ app.applicant_name }}</strong>
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">{{ app.applicant_email }}</div>
+                                    {% if app.institution %}
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">{{ app.institution }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong style="color: var(--primary);">{{ app.scholarship_title }}</strong>
+                                    <div style="font-size: 0.8rem; color: var(--accent); font-weight: 600;">${{ "{:,.0f}".format(app.scholarship_amount) }}</div>
+                                </td>
+                                <td>{{ app.academic_level }}</td>
+                                <td><strong>{{ "%.2f"|format(app.gpa) }}</strong></td>
+                                <td style="font-size: 0.85rem; color: var(--text-muted);">{{ app.submitted_at[:10] }}</td>
+                                <td>
+                                    {% if app.status == 'Submitted' %}
+                                        <span class="badge-status submitted">Submitted</span>
+                                    {% elif app.status == 'Under Review' %}
+                                        <span class="badge-status under-review">Under Review</span>
+                                    {% elif app.status == 'Approved' %}
+                                        <span class="badge-status approved">Approved</span>
+                                    {% elif app.status == 'Rejected' %}
+                                        <span class="badge-status rejected">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('admin_application_detail', app_id=app.id) }}" class="btn btn-primary btn-sm">
+                                        Review &amp; Decide
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div style="padding: 4rem 2rem; text-align: center; color: var(--text-muted);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 1rem auto;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <h3 style="color: var(--primary); margin-bottom: 0.5rem;">No Applications Matching Filter</h3>
+                <p>Try clearing filters or search terms.</p>
+                <a href="{{ url_for('admin_applications') }}" class="btn btn-outline-navy btn-sm" style="margin-top: 1rem;">Reset Filter</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

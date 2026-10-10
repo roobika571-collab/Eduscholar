@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Explore Scholarships – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <h1>Scholarship Opportunities</h1>
+            <p>Discover and apply for scholarships matching your academic goals and qualifications.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Search & Filter Controls -->
+    <div class="filter-bar">
+        <form method="GET" action="{{ url_for('scholarship_list') }}" class="filter-form">
+            <div class="search-input-wrapper">
+                <span class="search-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </span>
+                <input type="text" name="q" value="{{ query }}" class="search-input" placeholder="Search by title, organization, or keyword...">
+            </div>
+
+            <div>
+                <select name="category" class="filter-select">
+                    <option value="All" {% if selected_category == 'All' or not selected_category %}selected{% endif %}>All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <select name="sort" class="filter-select">
+                    <option value="deadline" {% if sort_by == 'deadline' %}selected{% endif %}>Sort by Deadline</option>
+                    <option value="amount_desc" {% if sort_by == 'amount_desc' %}selected{% endif %}>Highest Amount</option>
+                    <option value="amount_asc" {% if sort_by == 'amount_asc' %}selected{% endif %}>Lowest Amount</option>
+                    <option value="newest" {% if sort_by == 'newest' %}selected{% endif %}>Recently Added</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </div>
+        </form>
+
+        <!-- Category Pills Shortcut -->
+        <div class="category-pills">
+            <a href="{{ url_for('scholarship_list', q=query, sort=sort_by) }}" class="cat-pill {% if not selected_category or selected_category == 'All' %}active{% endif %}">All</a>
+            {% for cat in categories %}
+                <a href="{{ url_for('scholarship_list', category=cat, q=query, sort=sort_by) }}" class="cat-pill {% if selected_category == cat %}active{% endif %}">{{ cat }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Scholarship List Grid -->
+    {% if scholarships %}
+        <div class="scholarship-grid">
+            {% for s in scholarships %}
+                <div class="scholarship-card">
+                    <div class="scholarship-header">
+                        <div class="scholarship-meta-top">
+                            <span class="category-tag">{{ s.category }}</span>
+                            <span class="amount-tag">${{ "{:,.0f}".format(s.amount) }}</span>
+                        </div>
+                        <h3 class="scholarship-title">{{ s.title }}</h3>
+                        <p class="scholarship-org">{{ s.organization }}</p>
+                    </div>
+
+                    <div class="scholarship-body">
+                        <p class="scholarship-desc">{{ s.description }}</p>
+
+                        <div class="scholarship-details-list">
+                            <div class="detail-item">
+                                <span class="detail-label">Eligibility:</span>
+                                <span class="detail-val" style="font-size: 0.8rem; text-align: right; max-width: 65%;">{{ s.eligibility[:75] }}...</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Deadline:</span>
+                                <span class="detail-val">{{ s.deadline }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Available Slots:</span>
+                                <span class="detail-val">{{ s.slots }} recipients</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scholarship-footer">
+                        <a href="{{ url_for('scholarship_detail', scholarship_id=s.id) }}" class="btn btn-outline-navy btn-sm" style="flex: 1;">Details</a>
+                        {% if s.id in applied_ids %}
+                            <a href="{{ url_for('my_applications') }}" class="btn btn-outline-navy btn-sm" style="flex: 1; background-color: #f1f5f9; color: var(--text-muted); cursor: default;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Applied
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('apply_scholarship', scholarship_id=s.id) }}" class="btn btn-primary btn-sm" style="flex: 1;">Apply Now</a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 4rem 2rem; text-align: center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 1rem auto;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <h3 style="color: var(--primary); margin-bottom: 0.5rem;">No Scholarships Found</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Try adjusting your search keywords or clearing your category filters.</p>
+            <a href="{{ url_for('scholarship_list') }}" class="btn btn-primary">Reset Filters</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

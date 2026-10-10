@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}My Applications &amp; History – EduScholar{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container dashboard-header-inner">
+        <div class="dash-welcome">
+            <h1>My Scholarship Applications</h1>
+            <p>Track live application review milestones, decisions, and committee notes.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('scholarship_list') }}" class="btn btn-primary btn-sm">+ Apply for More Scholarships</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    {% if applications %}
+        <div style="display: flex; flex-direction: column; gap: 2rem;">
+            {% for app in applications %}
+                <div class="card-table-wrapper" style="padding: 2rem; margin-bottom: 0;">
+                    <!-- Card Top Bar -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 1.25rem;">
+                        <div>
+                            <span class="category-tag" style="margin-bottom: 0.4rem; display: inline-block;">{{ app.category }}</span>
+                            <h2 style="color: var(--primary); font-size: 1.4rem; margin-bottom: 0.25rem;">{{ app.scholarship_title }}</h2>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                                Administered by <strong>{{ app.organization }}</strong> &bull; Application Ref: #APP-{{ "%04d"|format(app.id) }}
+                            </p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent);">${{ "{:,.0f}".format(app.amount) }}</div>
+                            <span style="font-size: 0.82rem; color: var(--text-muted);">Submitted: {{ app.submitted_at[:10] }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Visual Timeline Stepper -->
+                    <div style="margin: 2rem 0;">
+                        <div class="status-stepper">
+                            <!-- Step 1: Submitted -->
+                            <div class="step-item completed">
+                                <div class="step-dot">&#10003;</div>
+                                <span class="step-label">1. Submitted</span>
+                            </div>
+
+                            <!-- Step 2: Under Review -->
+                            <div class="step-item {% if app.status in ['Under Review', 'Approved', 'Rejected'] %}completed{% else %}active{% endif %}">
+                                <div class="step-dot">
+                                    {% if app.status in ['Under Review', 'Approved', 'Rejected'] %}&#10003;{% else %}2{% endif %}
+                                </div>
+                                <span class="step-label">2. Under Review</span>
+                            </div>
+
+                            <!-- Step 3: Decision -->
+                            <div class="step-item {% if app.status == 'Approved' %}completed{% elif app.status == 'Rejected' %}rejected{% elif app.status == 'Under Review' %}active{% endif %}">
+                                <div class="step-dot">
+                                    {% if app.status == 'Approved' %}
+                                        &#10003;
+                                    {% elif app.status == 'Rejected' %}
+                                        &times;
+                                    {% else %}
+                                        3
+                                    {% endif %}
+                                </div>
+                                <span class="step-label">
+                                    {% if app.status == 'Approved' %}
+                                        Approved
+                                    {% elif app.status == 'Rejected' %}
+                                        Decision Final
+                                    {% else %}
+                                        Decision
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Application Detail Metrics & Reviewer Notes -->
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; background: var(--bg-alt); padding: 1.25rem 1.5rem; border-radius: var(--radius-md);">
+                        <div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">
+                                Current Committee Evaluation Status
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                {% if app.status == 'Submitted' %}
+                                    <span class="badge-status submitted">Application Submitted – Awaiting Committee Queue</span>
+                                {% elif app.status == 'Under Review' %}
+                                    <span class="badge-status under-review">Under Committee Evaluation</span>
+                                {% elif app.status == 'Approved' %}
+                                    <span class="badge-status approved">Scholarship Award Approved! Congratulations!</span>
+                                {% elif app.status == 'Rejected' %}
+                                    <span class="badge-status rejected">Application Not Selected</span>
+                                {% endif %}
+                            </div>
+
+                            {% if app.admin_notes %}
+                                <div style="background-color: #ffffff; border-left: 3px solid var(--primary); padding: 0.85rem 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; margin-top: 0.75rem;">
+                                    <strong style="font-size: 0.82rem; color: var(--primary); display: block; margin-bottom: 0.2rem;">Evaluator Remarks:</strong>
+                                    <p style="font-size: 0.88rem; color: var(--text-body); margin: 0;">{{ app.admin_notes }}</p>
+                                </div>
+                            {% else %}
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+                                    Evaluation panel will record official remarks and award details upon completion of review.
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Applicant Submission Records -->
+                        <div style="border-left: 1px solid var(--border); padding-left: 1.25rem; display: flex; flex-direction: column; justify-content: center; gap: 0.5rem;">
+                            <div style="font-size: 0.85rem;">
+                                <span style="color: var(--text-muted);">Recorded GPA:</span>
+                                <strong>{{ "%.2f"|format(app.gpa) }}</strong>
+                            </div>
+                            <div style="font-size: 0.85rem;">
+                                <span style="color: var(--text-muted);">Academic Level:</span>
+                                <strong>{{ app.academic_level }}</strong>
+                            </div>
+                            {% if app.document_path %}
+                                <div style="margin-top: 0.5rem;">
+                                    <a href="{{ url_for('download_document', application_id=app.id) }}" class="btn btn-outline-navy btn-sm" style="width: 100%; font-size: 0.82rem;">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                        Download My Document
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 4rem 2rem; text-align: center;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" style="margin: 0 auto 1rem auto;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            <h3 style="color: var(--primary); margin-bottom: 0.5rem;">You Have No Active Applications</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Discover scholarships matching your academic goals and submit your first application.</p>
+            <a href="{{ url_for('scholarship_list') }}" class="btn btn-primary">Browse Available Scholarships</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
